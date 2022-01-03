@@ -1,0 +1,429 @@
+■■■ Spring MVC ■■■
+
+1. 웹 개발을 위한 MVC 패턴이 적용된 Spring Framework.
+   Spring 에서는 DispatcherServlet 클래스가 컨트롤러 역할을 수행하게 된다.
+
+2. Spring MVC 의 주요 구성요소
+   - DispatcherServlet
+     : 클라이언트의 요청을 전달받는다.
+       Controller(사용자 정의 컨트롤러)에게 클라이언트의 요청을 전달하고,
+       Controller 가 리턴한 결과값을 View에 전달하여
+       적합한 응답을 생성하도록 처리한다.
+   - HandlerMapping
+     : 클라이언트의 요청 URL 을 어떤 Controller 가 처리할지 결정한다.
+   - Controller : 사용자 정의 Controller. 액션 처리. 우리가 작성.
+     : 사용자 정의 Controller. 액션 처리. 우리가 작성.
+   - ModelAndView
+     : View 객체 정보와 결과값이 들어있는 객체.
+   - ViewResolver
+     : 요청에 대한 처리 결과를 보여줄 View를 결정한다.
+   - View 
+     : 요청에 대한 처리 결과를 보여줄 응답(결과 출력)을 생성한다. 우리가 작성.
+   - web.xml 
+     : DispatcherServlet 서블릿 객체 등록. 우리가 작성.
+     
+   - dispatcher-servlet.xml 
+     : Controller 객체 등록. 우리가 작성.
+
+3. Spring MVC 실행 흐름
+   - 사용자 요청 -> DispatcherServlet.
+   - DispatcherServlet → HandlerMapping 에 주소 분석 요청.
+   - DispathcerServlet → 특정 Controller 객체 호출 및 결과 수신.
+   			  결과는 ModelAndView 객체.
+   
+     ※ ModelAndView 객체
+   	: View 객체 정보와 결과값이 들어있는 객체.
+   - DispatcherServlet → ViewResolver 에 View 객체 분석 요청.
+   - DispatcherServlet → 특정 View 객체에 Model 객체를 넘겨주고
+			  결과 출력.
+* Front Controllor : DispatcherServlet 
+
+
+4. Spring MVC 에서 우리가 해야 할 일
+   - Controller (사용자 정의 컨트롤러)
+     액션 처리를 담당하는 Controller 클래스 작성.
+     Annotation 을 사용하거나 Controller 인터페이스를 구현하여 작성.
+
+   - View
+     결과 출력용 JSP 페이지 작성.
+  
+   - web.xml
+     서블릿 주소와 DispatcherServlet 클래스 등록.
+
+   - dispatcher-servlet.xml (dispatcher-servlet 이라는 정해진 이름 써야함!)
+     우리가 작성한 Controller 객체 등록.
+     URL 매핑 주소 등록.
+
+
+※ Spring 이 스트럿츠를 비롯하여 다양한 웹 프레임워크와
+   비교적 연동이 잘 되는 편이기는 하지만
+   서로 다른 두 프레임워크를 연동하기 위해서는
+   설정의 중복 등 개발 과정에서 불편함이 존재할 수 밖에 없다.
+   따라서, Spring 이 자체적으로 제공하는 MVC 프레임워크를 사용하게 되면
+   Spring 이 제공하는 AOP, 트랜잭션 처리, IoC/DI 등의 기능을
+   그대로 사용하면서 MVC 패천에 기반하여 웹 어플리케이션을 개발할 수 있다.
+   또한, 다른 프레임워크와 Spring 을 연동하기 위해서
+   설정을 중복해서 적용해야 한다던지... 하는 개발 과정에서 나타나는
+   불편을 해소할 수 있게 된다.
+
+
+
+--------------------------------------------------------------------------------------------------------------
+
+■■■ Spring MVC 프로젝트 실습 01 ■■■
+
+○ Perspective
+   : JavaEE
+○ 다이나믹 웹 프로젝트 생성
+   : mvc01
+○ 톰캣 서버 등록 및 포트(port) 설정
+   : port 8090 / URIEncoding="UTF-8"
+○ 기타 환경 설정
+   : 폰트, 줄번호, 편집포맷, 인코딩방식, 템플릿 등...
+○ Spring MVC 환경 설정을 위한 라이브러리 등록
+   : WebContent > WEB-INF > lib 경로에 등록
+   - 경로1 → C:\s-f-3.0.2-with-docs\spring-framework-3.0.2.RELEASE\dist
+     · 파일 1  → org.springframework.aop-3.0.2.RELEASE.jar
+     · 파일 2  → org.springframework.asm-3.0.2.RELEASE.jar
+     · 파일 3  → org.springframework.beans-3.0.2.RELEASE.jar
+     · 파일 4  → org.springframework.context-3.0.2.RELEASE.jar
+     · 파일 5  → org.springframework.core-3.0.2.RELEASE.jar
+     · 파일 6  → org.springframework.expression-3.0.2.RELEASE.jar
+     · 파일 7  → org.springframework.jdbc-3.0.2.RELEASE.jar
+     · 파일 8  → org.springframework.transaction-3.0.2.RELEASE.jar
+     · 파일 9  → org.springframework.web.servlet-3.0.2.RELEASE.jar
+     · 파일 10 → org.springframework.web-3.0.2.RELEASE.jar
+
+   - 경로2 → C:\s-f-3.0.2-dependencies\org.apache.commons\com.springsource.org.apache.commons.logging\1.1.1
+     · 파일 11 → com.springsource.org.apache.commons.logging-1.1.1.jar
+
+   - 경로3 → C:\oraclexe\app\oracle\product\11.2.0\server\jdbc\lib
+              (오라클 설치 경로)
+     · 파일 12 → ojdbc6.jar
+
+   - 경로4 → C:\Downloads\10_JSTL\jakarta-taglibs-standard-1.1.2\jakarta-taglibs-standard-1.1.2\lib
+              (JSTL 다운로드 경로)
+     · 파일 13 → jstl.jar
+     · 파일 14 → standard.jar
+
+
+○ 물리적 파일 구성
+   - HelloController.java
+   - Hello
+   - dispatcher-servlet.xml
+   - web.xml
+
+○ 사용자 최초 요청 주소
+http://localhost:8090/mvc01/hello.action
+
+
+
+※ 우리가 작성한 mvc01 프로젝트의 실행 및 처리 과정
+     ① 외부 요청
+        http://localhost:8090/mvc01/hello/action
+   
+        → web.xml 관여
+           (→ Front Controller 등록 → DispatcherServlet 등록)
+
+     ② DispatcherServlet 요청 접수
+  
+        → web.xml → DispatcherServlet 등록
+           web.xml → URL패턴 등록
+
+        → 사용자의 요청 분석 → 특정 컨트롤러 지정
+
+     ③ 해당 컨트롤러의 특정 메소드 호출 (액션 처리, ModelAndView 객체 반환)
+
+        → 사용자의 요청에 맞는 액션 처리
+
+        →결과 데이터가 들어있는 모델 객체 준비
+
+        → 뷰 정보(JSP 페이지 정보) 반환
+
+           ※ JSP 페이지 정보
+               - 여기서는 객체가 아닌 경로가 포함된 View 페이지 이름
+
+      ④ 뷰 페이지에서 최종 웹 페이지를 작성
+
+         → JSP 페이지 내에서 EL 이나 JSTL 등의 표기 사용 가능
+  
+      ⑤ 응답 완료
+
+
+--------------------------------------------------------------------------------------------------------------
+■■■ Spring MVC 프로젝트 실습 2 ■■■
+
+○ Perspective
+   : JavaEE
+
+○ 다이나믹 웹 프로젝트 생성
+   : mvc02
+
+○ 기본 환경 구성 및 라이브러리 설정
+   : mvc00 (우리가 임의로 만들어 둔 샘플)로 부터
+     src, WebContent 디렉터리 복사 & 붙여넣기
+
+○ 실습 성격
+   : 데이터 송수신 관련 실습 (Spring MVC 버전)
+
+○ 물리적 파일 구성
+   - SendController.java	→ 컨트롤러 객체
+   - Send.jsp			→ 뷰 객체
+
+   - ReceiveController.java	→ 컨트롤러 객체
+   - Receive.jsp		→ 뷰 객체
+	
+   - dispatcher-servlet.xml	→ 컨트롤러 객체 등록 / URL 매핑 주소 등록
+
+   - web.xml			→ DispatcherServlet 객체 등록 / URL 매핑 주소 등록
+
+
+○ 사용자 최초 요청 주소
+http://localhost:8090/mvc02/send.do
+
+
+--------------------------------------------------------------------------------------------------------------
+■■■ Spring MVC 프로젝트 실습 3 ■■■
+
+○ Perspective
+   : JavaEE
+
+○ 다이나믹 웹 프로젝트 생성
+   : mvc03
+
+○ 기본 환경 구성 및 라이브러리 설정
+   : mvc00 (우리가 임의로 만들어 둔 샘플)로 부터
+     src, WebContent 디렉터리 복사 & 붙여넣기
+
+○ 실습 성격
+   : 데이터 송수신 관련 실습 (Spring MVC 버전)
+     JDBC 모듈 추가 활용  (추가)
+     SimpleDriverDataSource 클래스 활용 (추가)
+
+○ 기능 구현
+   : 사용자로부터 이름, 전화번호 정보를 입력받아 데이터베이스에 저장
+     이름, 전화번호 항목을 데이터베이스로부터 읽어 화면에 출력
+
+○ 사전 작업
+   - TBL_MEMBERLIST 테이블 생성
+   - MEMBERLISTSEQ 시퀀스 생성
+   - 샘플 데이터 입력
+   
+○ 기본 레이아웃(페이지 화면 구성)
+   이름 [          ]    → <input type="text">
+   전화 [          ]    → <input type="text">
+    <회원 추가>         → <button type="button">
+
+   전체 인원 수 : 2명   → <p>...</p>
+  -------------------   → <table>...</table>
+   번호 이름 전화번호
+    1   장.. 010...
+    2   정.. 010...
+  -------------------
+
+
+○ 물리적 파일 구성
+  
+   - mvc03_scott.sql			→ 데이터베이스 관련 객체 구성 및 실습 데이터 준비.
+
+   - MemberDTO.java			→ 사용자 정의 자료형 클래스 (DTO 활용)
+
+   - IMemberDAO.java			→ 인터페이스
+   - MemberDAO.java			→ 데이터베이스 액션 처리 클래스
+					   Connection 객체에 대한 의존성 주입
+                                           (setter 메소드 추가)
+
+   - MemberListController.java		→ 사용자 정의 컨트롤러 클래스
+                         		   리스트 출력 액션
+                                           DAO 객체에 대한 의존성 주입
+                                           (setter 메소드 추가)
+   - MemberList.jsp			→  회원 명단 출력용 뷰
+                                            회원 정보 추가 폼 화면 구성
+
+   - MemberInsertController.java	→  사용자 정의 컨트롤러 클래스
+                                            회원 정보 추가 액션
+                                            DAO 객체에 대한 의존성 주입
+                                            (setter 메소드 추가)
+  
+   - dispatcher-servlet.xml		→ 컨트롤러 객체 등록
+                                           URL 매핑 주소 등록
+                                           SimpleDriverDataSource 객체 등록
+                                           의존 객체 주입 설정
+                                           DAO 객체 등록 
+	
+   - web.xml				→ DispatcherServlet 객체 등록
+                                           URL 매핑 주소 등록
+
+○ 사용자 최초 요청 주소
+http://localhost:8090/mvc03/memberlist.action
+
+
+--------------------------------------------------------------------------------------------------------------
+■■■ Spring MVC 프로젝트 실습 4 ■■■
+
+○ Perspective
+   : JavaEE
+
+○ 다이나믹 웹 프로젝트 생성
+   : mvc04
+
+○ 기본 환경 구성 및 라이브러리 설정
+   : mvc00 (우리가 임의로 만들어 둔 샘플)로 부터
+     src, WebContent 디렉터리 복사 & 붙여넣기
+
+○ 실습 성격
+   : 직원 관리 프로그램 (Spring MVC 버전)
+     JDBC 모듈 추가 활용  (추가)
+     SimpleDriverDataSource 클래스 활용 (추가)
+
+○ 기능 구현
+   - 직원 정보 출력, 입력, 삭제, 수정 기능 구현.
+   - 지역 정보 출력, 입력, 삭제, 수정 기능 구현.
+   - 부서 정보 출력, 입력, 삭제, 수정 기능 구현.
+   - 직위 정보 출력, 입력, 삭제, 수정 기능 구현.
+   - 로그인 / 로그아웃 기능 구현.
+     → 관리자 및 일반 직원 로그인 구분.
+   ==> Spring MVC, JSP/Servlet, ORACLE, HTML/CSS/Javascript, AJAX
+       , jQuery, EL, JSTL 표현 등 사용.
+
+○ 사전 작업 → 테이블 및 시퀀스, 주요 쿼리문 구성
+   - EMPLOYEE 직원 테이블
+   - REGION 지역 테이블
+   - DEPARTMENT 부서 테이블
+   - POSITION 직위 테이블
+   - 샘플 데이터 입력   
+
+○ 물리적 파일 구성
+  
+   - mvc04_scott.sql		→ 데이터베이스 관련 객체 구성 및 실습 데이터 준비.
+
+   - Employee.java		→ DTO 개념. 직원 정보 자료형 클래스.
+   - Department.java		→ DTO 개념. 부서 정보 자료형 클래스.
+   - Region.java		→ DTO 개념. 지역 정보 자료형 클래스.
+   - Position.java		→ DTO 개념. 직위 정보 자료형 클래스.
+
+   - IEmployeeDAO.java		→ 인터페이스.
+   - IDepartmentDAO.java		→ 인터페이스.
+   - IRegionDAO.java		→ 인터페이스.
+   - IPositionDAO.java		→ 인터페이스.
+
+   - EmployeeDAO.java		→ 데이터베이스 액션 처리 클래스.
+                                   직원 정보 입출력 액션, 수정 액션.
+                                   Connection 객체에 대한 의존성 주입 준비(setter 정의)
+
+   - DepartmentDAO.java		→ 데이터베이스 액션 처리 클래스.
+                                   부서 정보 입출력 액션, 수정 액션.
+                                   Connection 객체에 대한 의존성 주입 준비(setter 정의)
+
+   - RegionDAO.java		→ 데이터베이스 액션 처리 클래스.
+                                   지역 정보 입출력 액션, 수정 액션.
+                                   Connection 객체에 대한 의존성 주입 준비(setter 정의)
+
+   - PositionDAO.java		→ 데이터베이스 액션 처리 클래스.
+                                   직위 정보 입출력 액션, 수정 액션.
+                                   Connection 객체에 대한 의존성 주입 준비(setter 정의)
+
+
+   - EmployeeMenu.jsp		→ 메인 메뉴 뷰 페이지. 로그아웃 처리.
+   - menuStyle.css		→ 메뉴 스타일 구성.
+
+   - EmployeeList.jsp		→ 직원 정보 출력 페이지.
+   - main.css			→ 메인 스타일 구성.
+
+   - EmployeeInsertForm.jsp	→ 직원 정보 입력 폼 페이지.
+                                   AJAX, jQuery 기능 포함.
+   - EmployeeUpdateForm.jsp	→ 직원 정보 수정 폼 페이지
+                                   AJAX, jQuery 기능 포함.
+   
+   - DepartmentList.jsp		→ 부서 정보 출력 페이지.
+                                   입력, 수정 폼 페이지.
+    
+   - RegionList.jsp		→ 지역 정보 출력 페이지.
+                                   입력, 수정 폼 페이지.
+
+   - PositionList.jsp		→ 직위 정보 출력 페이지.
+                                   입력, 수정 폼 페이지.
+   
+   - Ajax.jsp			→ JAX 객체 구성 페이지
+ 
+   - LoginForm.jsp		→ 관리자, 일반사원 로그인 폼 페이지
+                                   ID(employeeId), PW(주민번호 뒷자리 7자리) 입력
+   - LogoutForm.jsp		→ 로그아웃 처리와 관련한 폼 페이지
+
+   - EmpList.jsp		→ 일반 직원 전용 리스트 출력 페이지
+                                   로그아웃 처리
+                                   입력, 수정, 삭제 기능 없음.
+
+   - ...중략...
+
+   - EmployeeListController.java 
+     (employeelist.action)
+
+   - EmployeeInsertFormController.java			// 이거 입력받기 전에 departmentlist / positionlist / regionlist (id)로 받아와야함
+     (employeeinsertform.action)
+
+   - AjaxController.java
+     (ajax.action)
+
+   - EmployeeInsertController.java
+     (employeeinsert.action)
+
+   - EmployeeUpdateFormController.java
+     (employeeinsertform.action)
+
+   - EmployeeUpdateController.java
+     (employeeupdate.action)
+
+   - EmployeeDeleteController.java
+     (employeedelete.action)
+
+
+   - DepartmentListController.java 
+   - DepartmentInsertFormController.java
+   - DepartmentInsertController.java
+   - DepartmentUpdateFormController.java
+   - DepartmentUpdateController.java
+   - DepartmentDeleteController.java
+
+   - RegionListController.java 
+   - RegionInsertFormController.java
+   - RegionInsertController.java
+   - RegionUpdateFormController.java
+   - RegionUpdateController.java
+   - RegionDeleteController.java
+
+   - PositionListController.java 
+   - PositionInsertFormController.java
+   - PositionInsertController.java
+   - PositionUpdateFormController.java
+   - PositionUpdateController.java
+   - PositionDeleteController.java
+
+   - LoginFormController.java
+   - LoginController.java
+   - LogoutController.java
+
+   - EmpListController.java
+ 
+   - ... 중략...
+
+  
+   - dispatcher-servlet.xml		→ 컨트롤러 객체 등록
+                                           URL 매핑 주소 등록
+                                           SimpleDriverDataSource 객체 등록
+                                           의존 객체 주입 설정
+                                           DAO 객체 등록 
+	
+   - web.xml				→ DispatcherServlet 객체 등록
+                                           URL 매핑 주소 등록
+
+○ 사용자 최초 요청 주소
+http://localhost:8090/mvc04/employeelist.action
+
+※ 추후 우리는 실무 프로젝트를 수행하는 과정에서
+   컨트롤러를 업무 단위로 묶어 작업 및 처리하게 될 것이다.
+   이후, 어노테이션을 활용하여 컨트롤러를 지정해서 처리하는 것도 수행하게 될 것이다.
+   하지만, 이번 실습 과정에서 기본 단위의 컨트롤러 구성을 수행해 봄으로써
+   Model-View-Controller 의 기능 및 처리 흐름에 대해
+   제대로 파악할 수 있도록 한다.
+
